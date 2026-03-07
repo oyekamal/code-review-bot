@@ -1,0 +1,23 @@
+# Core dependencies
+pydantic==2.5.3
+pydantic-settings==2.1.0
+PyYAML==6.0.1
+python-dotenv==1.0.0
+
+# CLI
+click==8.1.7
+rich==13.7.0
+
+# GitHub API
+PyGithub==2.1.1
+requests==2.31.0
+
+# LLM providers
+anthropic==0.8.1
+
+# Logging
+structlog==23.2.0
+
+# Testing
+pytest==7.4.3
+pytest-mock==3.12.0

@@ -1,0 +1,34 @@
+projects:
+  - name: taleemabad-core
+    repo: Orenda-Project/taleemabad-core
+    github_token_env: GITHUB_TOKEN
+    llm:
+      # Using Claude for better quality and speed
+      provider: anthropic
+      model: claude-haiku-4-5-20251001
+      api_key_env: ANTHROPIC_API_KEY
+      # For local Ollama (slower):
+      # provider: ollama
+      # model: codellama:7b-instruct
+      # base_url: http://localhost:11434
+    discovery:
+      auto_detect: false  # Disabled - using manual frameworks (no repo clone needed)
+      frameworks:
+        - django
+        - react
+      guide_files:
+        - pr-review-bot/guides/CODE_REVIEW_GUIDE.md
+        - pr-review-bot/guides/TEST_REVIEW_GUIDE.md
+    review:
+      max_comments: 8
+      auto_approve_on_resolution: false
+      generate_improvements: true
+      target_branch: develop  # Only review PRs targeting this branch
+
+# Add more projects here:
+# - name: another-project
+#   repo: org/repo-name
+#   github_token_env: GITHUB_TOKEN
+#   llm:
+#     provider: ollama
+#     model: llama3.2
