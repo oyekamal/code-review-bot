@@ -14,7 +14,6 @@ setup(
         "rich>=13.7.0",
         "PyGithub>=2.1.1",
         "requests>=2.31.0",
-        "anthropic==0.84.0",
         "httpx>=0.28.0",
         "structlog>=23.2.0",
     ],

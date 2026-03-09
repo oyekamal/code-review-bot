@@ -13,7 +13,6 @@ PyGithub==2.1.1
 requests==2.31.0
 
 # LLM providers
-anthropic==0.84.0
 httpx>=0.28.0
 
 # Logging
