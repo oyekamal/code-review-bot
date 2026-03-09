@@ -152,9 +152,10 @@ class SmartReviewer:
         for comment in new_comments:
             path = comment.get("path", "")
             line = comment.get("line", 0)
-            # Skip if bot already has a comment within 5 lines on the same file
+            # Skip if bot already has a comment within 20 lines on the same file
+            # (20-line tolerance handles line number shifts from new commits)
             already_commented = any(
-                ep == path and abs(el - line) <= 5
+                ep == path and abs(el - line) <= 20
                 for ep, el in bot_spots
             )
             if already_commented:
