@@ -9,6 +9,7 @@ from pathlib import Path
 
 from ..config import load_config, get_project_config
 from ..core.smart_reviewer import SmartReviewer
+from ..core.review_db import ReviewDB
 from ..core.logger import setup_logging
 
 console = Console()
@@ -149,26 +150,46 @@ def list_prs(ctx, project):
             sys.exit(1)
         
         reviewer = SmartReviewer(project_config)
-        prs = reviewer.github.list_open_prs()
-        
+        target = project_config.review.target_branch
+        prs = reviewer.github.list_open_prs(base_branch=target)
+
         if not prs:
             console.print(f"[yellow]No open PRs found in {project}[/yellow]")
             return
-        
+
+        db = ReviewDB()
+
+        def _status(pr: dict) -> str:
+            record = db._get(project, pr["number"])
+            if not record:
+                return "[yellow]PENDING[/yellow]"
+            event = record.get("event", "COMMENT")
+            current_sha = pr.get("head_sha", "")
+            sha_changed = record.get("head_sha") != current_sha
+            suffix = " [dim](new commits)[/dim]" if sha_changed else ""
+            if event == "APPROVE":
+                return f"[green]APPROVED[/green]{suffix}"
+            elif event == "REQUEST_CHANGES":
+                return f"[red]CHANGES REQ[/red]{suffix}"
+            else:
+                return f"[cyan]COMMENTED[/cyan]{suffix}"
+
         table = Table(title=f"📋 Open PRs in {project}")
-        table.add_column("PR #", style="cyan")
+        table.add_column("PR #", style="cyan", no_wrap=True)
         table.add_column("Title", style="white")
-        table.add_column("Author", style="green")
-        table.add_column("Created", style="yellow")
-        
+        table.add_column("Author", style="green", no_wrap=True)
+        table.add_column("Created", style="yellow", no_wrap=True)
+        table.add_column("Status", no_wrap=True)
+
         for pr in prs:
             table.add_row(
                 str(pr["number"]),
-                pr["title"][:60] + "..." if len(pr["title"]) > 60 else pr["title"],
+                pr["title"][:55] + "..." if len(pr["title"]) > 55 else pr["title"],
                 pr["author"],
-                pr["created_at"][:10]
+                pr["created_at"][:10],
+                _status(pr),
             )
-        
+
         console.print(table)
         
     except Exception as e:

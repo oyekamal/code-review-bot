@@ -342,8 +342,9 @@ class SmartReviewer:
         Returns:
             Review result
         """
+        head_sha = self.github.get_pr(pr_number).head.sha
         review_result = self.review_pr(pr_number, repo_path)
-        self.post_review(pr_number, review_result)
+        self.post_review(pr_number, review_result, head_sha=head_sha)
         return review_result
     
     def review_all_open_prs(self, repo_path: Optional[str] = None) -> List[Dict]:
