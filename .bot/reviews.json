@@ -170,6 +170,15 @@
       "event": "COMMENT",
       "files_reviewed": 0,
       "comments_posted": 0
+    },
+    "4693": {
+      "pr_number": 4693,
+      "title": "fix: add envs to missiong alerts",
+      "head_sha": "520c9c38250e45a01e985a3d3f15ff05ddb28deb",
+      "reviewed_at": "2026-03-09T14:30:49.062638",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
     }
   }
 }
