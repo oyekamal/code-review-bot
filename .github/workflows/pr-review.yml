@@ -1,0 +1,48 @@
+name: PR Review Bot
+
+on:
+  schedule:
+    # 9am–5pm PKT (UTC+5) every 2 hours, weekdays only
+    # 4:00, 6:00, 8:00, 10:00, 12:00 UTC = 9am, 11am, 1pm, 3pm, 5pm PKT
+    - cron: '0 4,6,8,10,12 * * 1-5'
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to commit reviews.json back
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Create required directories
+        run: mkdir -p .bot logs
+
+      - name: Run PR review bot
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          pr-review-bot review --project taleemabad-core
+
+      - name: Commit updated reviews.json
+        run: |
+          git config user.name "pr-review-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add .bot/reviews.json
+          git diff --staged --quiet && echo "No changes to reviews.json" || \
+            git commit -m "chore: update reviews.json [skip ci]" && git push

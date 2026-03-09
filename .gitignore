@@ -181,6 +181,7 @@ pyrightconfig.json
 
 # Runtime / local data
 logs/
-.bot/
+.bot/*
+!.bot/reviews.json
 .claude/
 .qodo/

@@ -1,0 +1,175 @@
+{
+  "taleemabad-core": {
+    "4691": {
+      "pr_number": 4691,
+      "title": "feat: Add BDD Cucumber tests for login functionality",
+      "head_sha": "19ef396cb079fb61276209b05d50580f33689f43",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4689": {
+      "pr_number": 4689,
+      "title": "chore: Update frontend documentation and structure; add feature modul\u2026",
+      "head_sha": "9d55f09e9b35a14bd496672c1dbd1bf13cfdc82e",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4687": {
+      "pr_number": 4687,
+      "title": "feat: webhook implementation for ug-eg",
+      "head_sha": "e4e6fcdf5d39ecc98596459e2b657bb985779553",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4683": {
+      "pr_number": 4683,
+      "title": "[CHG] External Party Lesson plan backend tests",
+      "head_sha": "86c7151faed991ed2a8a7110b93cef7b5c3fa9af",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4681": {
+      "pr_number": 4681,
+      "title": "add gherkin test cases for adding classes to timetable with full flow scenarios",
+      "head_sha": "11de2e0755662fb4196144e14499e756d1d04b85",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4680": {
+      "pr_number": 4680,
+      "title": "feat: gherkin test for community",
+      "head_sha": "65587724f8172900b86e495f36a8abff874e5ef3",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4679": {
+      "pr_number": 4679,
+      "title": "feat: add comprehensive test scenarios for Level 0 and Level 1 teache\u2026",
+      "head_sha": "8272a212cb117e4cf9f859197fbdef82fbf7b7fc",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4678": {
+      "pr_number": 4678,
+      "title": "exam-generator-bdd",
+      "head_sha": "fc26c4b0d64d5bee0441e04a5481639385843ab8",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4677": {
+      "pr_number": 4677,
+      "title": "feat :gherkin  test cases - digital coach",
+      "head_sha": "68e15b522ebc82a6fe898e3b0c8744cf0617c4c1",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4676": {
+      "pr_number": 4676,
+      "title": "Edit-with-ai-feature",
+      "head_sha": "50ace78e228d1021a3e6eab1ca46d57b72b1c35d",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4675": {
+      "pr_number": 4675,
+      "title": "feat: add sign-in feature with multiple scenarios for teacher authentication",
+      "head_sha": "609fe7c94d2dfd78bc0ec26d9b99b97ffd39bb52",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4670": {
+      "pr_number": 4670,
+      "title": "feat: Add teacher training tester agent for automation",
+      "head_sha": "5649a003e1d933962fd57bc348987f9024f77296",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4666": {
+      "pr_number": 4666,
+      "title": "feat: add intent validation workflow and related scripts for QA process",
+      "head_sha": "1dc3dd90583edddb61cf0ff5a2660692d7e8b0a2",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4638": {
+      "pr_number": 4638,
+      "title": "Add notification mechanism for notification for training reminder for stale users",
+      "head_sha": "3dfdbabb45ce36058ec83d74c30f060ae9f4b44c",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4613": {
+      "pr_number": 4613,
+      "title": "feat: FE-BE test generation",
+      "head_sha": "c5de8a1ccc91f57c658112d4eed6e23a77269588",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4530": {
+      "pr_number": 4530,
+      "title": "[CLP]: Isolate LP Assistant Service",
+      "head_sha": "d5bb3ea63dcbcf38817038110dfda90ae3fdf5fe",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4497": {
+      "pr_number": 4497,
+      "title": "feat: Implement idempotent push sync for observations and visits, enhancing data integrity by preventing duplicates during bulk creation.",
+      "head_sha": "031d9b3830cb55480a52d619926b503ef7523f30",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4457": {
+      "pr_number": 4457,
+      "title": "Mc20 16139 live update implementation",
+      "head_sha": "5896eafd15e2acab6d6fc2efd6d8bdcaa20557c2",
+      "reviewed_at": "2026-03-07T12:00:00",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    },
+    "4692": {
+      "pr_number": 4692,
+      "title": "chore: env added to alert msg",
+      "head_sha": "b0c312b8f7ef9ba37db83605bda6fb55e0180de6",
+      "reviewed_at": "2026-03-09T10:58:05.024441",
+      "event": "COMMENT",
+      "files_reviewed": 0,
+      "comments_posted": 0
+    }
+  }
+}
