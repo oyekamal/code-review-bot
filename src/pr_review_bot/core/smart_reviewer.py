@@ -366,6 +366,13 @@ class SmartReviewer:
             pr_number = pr_data["number"]
             head_sha = pr_data.get("head_sha", "")
 
+            # Skip PRs authored by the bot account itself
+            pr_author = pr_data.get("author", "")
+            if pr_author == self.bot_login:
+                logger.info(f"  ⏭ PR #{pr_number} authored by bot ({self.bot_login}) — skipping")
+                skipped += 1
+                continue
+
             # Skip if we already reviewed this exact commit
             if head_sha and self.db.already_reviewed(self.config.name, pr_number, head_sha):
                 logger.info(f"  ⏭ PR #{pr_number} unchanged since last review (sha={head_sha[:7]}) — skipping")

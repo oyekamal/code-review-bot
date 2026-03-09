@@ -21,7 +21,7 @@ projects:
         - pr-review-bot/guides/TEST_REVIEW_GUIDE.md
     review:
       max_comments: 8
-      auto_approve_on_resolution: false
+      auto_approve_on_resolution: true
       generate_improvements: true
       target_branch: develop  # Only review PRs targeting this branch
 
