@@ -13,7 +13,7 @@ PyGithub==2.1.1
 requests==2.31.0
 
 # LLM providers
-anthropic==0.8.1
+anthropic>=0.40.0
 
 # Logging
 structlog==23.2.0
