@@ -251,10 +251,12 @@ class GitHubClient:
                     event=event,
                     comments=review_comments
                 )
+            elif event in ("APPROVE", "REQUEST_CHANGES"):
+                # Always use create_review for approve/request_changes — never a plain comment
+                pr.create_review(body=summary, event=event)
             else:
-                # Just post a comment if no line comments
-                logger.info(f"  ℹ No valid line comments, posting summary only")
-                pr.create_issue_comment(f"**Review Summary**\n\n{summary}")
+                # COMMENT event with no line comments — nothing useful to post
+                logger.info(f"  ℹ No line comments and no decision — skipping post")
             
             logger.info(f"  ✓ Review posted successfully")
             

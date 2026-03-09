@@ -93,9 +93,9 @@
     "4675": {
       "pr_number": 4675,
       "title": "feat: add sign-in feature with multiple scenarios for teacher authentication",
-      "head_sha": "609fe7c94d2dfd78bc0ec26d9b99b97ffd39bb52",
-      "reviewed_at": "2026-03-07T12:00:00",
-      "event": "COMMENT",
+      "head_sha": "efba5dc34c35428b670afd8f9660c162ce2752fb",
+      "reviewed_at": "2026-03-09T14:24:31.911707",
+      "event": "APPROVE",
       "files_reviewed": 0,
       "comments_posted": 0
     },
