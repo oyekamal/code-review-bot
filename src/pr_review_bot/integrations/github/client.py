@@ -331,6 +331,50 @@ class GitHubClient:
         """Return the login name of the authenticated user (the bot)."""
         return self.github.get_user().login
 
+    def get_unresolved_bot_threads(self, pr_number: int, bot_login: str) -> int:
+        """Return count of unresolved review threads started by the bot.
+
+        Uses GitHub GraphQL API since REST API doesn't expose resolved status.
+        Returns 0 if all bot threads are resolved (or if there are none).
+        """
+        owner, repo = self.repo_fullname.split("/")
+        query = """
+        query($owner: String!, $repo: String!, $pr: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $pr) {
+              reviewThreads(first: 100) {
+                nodes {
+                  isResolved
+                  comments(first: 1) {
+                    nodes { author { login } }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+        try:
+            resp = requests.post(
+                "https://api.github.com/graphql",
+                headers={"Authorization": f"bearer {self.token}"},
+                json={"query": query, "variables": {"owner": owner, "repo": repo, "pr": pr_number}},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            threads = resp.json()["data"]["repository"]["pullRequest"]["reviewThreads"]["nodes"]
+            unresolved = sum(
+                1 for t in threads
+                if not t["isResolved"]
+                and t["comments"]["nodes"]
+                and t["comments"]["nodes"][0]["author"]["login"] == bot_login
+            )
+            logger.info(f"  🔍 Bot threads on PR #{pr_number}: {len(threads)} total, {unresolved} unresolved")
+            return unresolved
+        except Exception as e:
+            logger.warning(f"  ⚠ Could not fetch review threads: {e}")
+            return -1  # -1 = unknown, fall through to normal review
+
     def get_bot_review_comments(self, pr_number: int) -> List[Dict]:
         """Get all existing inline review comments on a PR.
 

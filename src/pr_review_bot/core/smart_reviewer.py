@@ -178,19 +178,48 @@ class SmartReviewer:
 
     def review_pr(self, pr_number: int, repo_path: Optional[str] = None) -> Dict:
         """Review a pull request.
-        
+
         Args:
             pr_number: PR number to review
             repo_path: Optional path to cloned repo (only needed for remote guide files)
-            
+
         Returns:
             Review result dictionary
         """
         logger.info(f"\n{'='*60}")
         logger.info(f"🎯 Reviewing PR #{pr_number} in {self.config.name}")
         logger.info(f"{'='*60}\n")
-        
+
         try:
+            # ── Step 1: Check existing bot state BEFORE calling LLM ──────
+            had_request_changes = self._bot_has_pending_request_changes(pr_number)
+            if had_request_changes:
+                unresolved = self.github.get_unresolved_bot_threads(pr_number, self.bot_login)
+                if unresolved == 0:
+                    # All bot threads resolved → approve immediately, no LLM needed
+                    logger.info(f"  ✅ All bot comments resolved — approving PR #{pr_number}")
+                    pr = self.github.get_pr(pr_number)
+                    return {
+                        "event": "APPROVE",
+                        "summary": "All previously requested changes have been resolved. Approving.",
+                        "comments": [],
+                        "_files_reviewed": 0,
+                        "_title": pr.title,
+                    }
+                elif unresolved > 0:
+                    # Still has unresolved threads → do nothing, don't pile on
+                    logger.info(f"  ⏸ PR #{pr_number} has {unresolved} unresolved bot thread(s) — skipping")
+                    pr = self.github.get_pr(pr_number)
+                    return {
+                        "event": "SKIP",
+                        "summary": "",
+                        "comments": [],
+                        "_files_reviewed": 0,
+                        "_title": pr.title,
+                    }
+                # unresolved == -1 means GraphQL failed → fall through to normal review
+
+            # ── Step 2: Normal LLM review ────────────────────────────────
             # Get PR data
             pr = self.github.get_pr(pr_number)
             diff = self.github.get_pr_diff(pr_number)
@@ -314,6 +343,10 @@ class SmartReviewer:
             review_result: Review dictionary from review_pr
             head_sha: HEAD commit SHA (used to track what was reviewed)
         """
+        if review_result.get("event") == "SKIP":
+            logger.info(f"  ⏸ Skipping post for PR #{pr_number} (unresolved threads remain)")
+            return
+
         logger.info(f"📤 Posting review to PR #{pr_number}")
         try:
             self.github.post_review(pr_number, review_result)
