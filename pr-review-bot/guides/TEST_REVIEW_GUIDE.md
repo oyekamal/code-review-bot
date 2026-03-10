@@ -7,10 +7,14 @@ Read this guide fully, then review the diff, then output JSON as described at th
 
 ## CONTEXT
 
-- Project: taleemabad-core — Django 4.2, DRF 3.14, pytest + pytest-django
-- Test data: factory-boy ONLY — never `.objects.create()` in tests
+- Project: taleemabad-core — Django 4.2, DRF 3.14, **pytest + pytest-django** (NOT Django's `unittest`)
+- Test framework: pure pytest classes with `@pytest.mark.django_db` — no `unittest.TestCase` base class (except rare legacy files)
+- Test client: `APITenantClient` (a DRF `APIClient` subclass) provided by the `client` fixture in global `conftest.py`
+- Global fixtures (auto-applied): `with_tenant_context` (sets test schema), `clear_cache`, `media_storage`
+- Test data: factory-boy ONLY — never `.objects.create()` in tests (see exceptions in Rule 5)
 - Tests live in: `taleemabad_core/apps/<app_name>/tests/`
 - Auth in tests: always `client.force_authenticate(user=user)` — never `force_login()`
+- Run tests: `make test` or `docker compose -f local.yml run --rm django pytest <path> -v`
 
 ---
 
@@ -171,25 +175,58 @@ Every test method name MUST describe: what is being tested, under what condition
 
 ---
 
-## RULE 8 — Class-Level Data Belongs in setUpTestData, Not autouse Fixtures
+## RULE 8 — setUpTestData Is a Django TestCase Method — Don't Use in Pure Pytest Classes
 
-VIOLATION: Shared setup data created in autouse fixture (runs before EVERY test — slow):
+The project uses **pure pytest** (`@pytest.mark.django_db`) for almost all tests. `setUpTestData` is a `django.test.TestCase` classmethod — pytest's runner does NOT call it automatically in plain pytest classes.
+
+VIOLATION: Using `setUpTestData` in a class that does NOT inherit from `django.test.TestCase`:
 ```python
-@pytest.fixture(autouse=True)
-def setup(self):
-    self.user = UserFactory()               # WRONG for shared class-level data
-    self.teacher_profile = TeacherProfileFactory(user=self.user)
+@pytest.mark.django_db
+class TestUserViewSet:              # WRONG — setUpTestData is silently ignored by pytest
+    @classmethod
+    def setUpTestData(cls):         # pytest never calls this; cls.user will be missing
+        cls.user = UserFactory()
 ```
 
-CORRECT for class-level data used by all tests in the class:
+CORRECT primary pattern — `@pytest.fixture(autouse=True)` for per-test setup (most common):
 ```python
-@classmethod
-def setUpTestData(cls):
-    cls.user = UserFactory()
-    cls.teacher_profile = TeacherProfileFactory(user=cls.user)
+@pytest.mark.django_db
+class TestCourseSyncV2DataContent:
+    @pytest.fixture(autouse=True)
+    def setup(self, client):
+        self.client = client
+        self.user = UserFactory()
+        self.teacher_profile = TeacherProfileFactory(user=self.user)
+        self.client.force_authenticate(user=self.user)
 ```
 
-Use autouse fixture ONLY when each test needs a fresh, isolated instance (e.g. when one test modifies the data).
+This runs before EACH test. It is the expected, correct pattern — do NOT flag it.
+
+CORRECT advanced pattern — shared class-level data using `scope="class"` (for expensive setup only):
+```python
+@pytest.fixture(scope="class")
+def class_data(django_db_blocker):
+    with django_db_blocker.unblock():
+        return {"org": OrganizationFactory(), "user": UserFactory()}
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("class_data")
+class TestSomeModel:
+    def test_something(self, class_data):
+        assert class_data["org"].pk is not None
+```
+
+ACCEPTABLE (legacy only) — Django TestCase with setUpTestData is valid ONLY when the class explicitly inherits `TestCase`:
+```python
+from django.test import TestCase
+
+class TestSchoolGroup(TestCase):        # OK — inherits TestCase, setUpTestData works
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = OrganizationFactory()
+```
+
+Only flag `setUpTestData` when the class uses `@pytest.mark.django_db` without a `TestCase` base class.
 
 ---
 
@@ -257,13 +294,16 @@ client.force_authenticate(user=user)    # CORRECT for DRF JWT
 
 ## WHAT IS ACCEPTABLE — DO NOT FLAG THESE:
 
+- `@pytest.fixture(autouse=True)` for `setup` in a test class — this is the **primary pattern** used throughout the project; do NOT flag it
+- `@pytest.mark.django_db` on test class — this is correct
+- `force_authenticate` called in setup fixture — this is correct
+- `create_participant_for_profile(profile)` called in setup — this is the required pattern
+- `GrandQuiz.objects.create(...)` with a comment explaining the factory constraint
+- `.objects.create(...)` for join/through models (e.g. `TeacherTrainingStatus`, `Assessment`) when no factory exists — these are exceptions to Rule 5 (add the factory suggestion as a comment-only, not a REQUEST_CHANGES violation)
+- `from django.test import TestCase` with `setUpTestData` — valid only when the class explicitly inherits `TestCase`
+- Private helpers defined once inside a single test class (only flag if duplicated across files)
 - Docstrings on test methods describing the BDD scenario
 - BDD-style comments (`# ------ Scenario: ... ------`)
-- `create_participant_for_profile(profile)` called in setup — this is the required pattern
-- `@pytest.mark.django_db` on test class — this is correct
-- `GrandQuiz.objects.create(...)` with a comment explaining the factory constraint
-- Private helpers defined once inside a single test class (only flag if duplicated across files)
-- `force_authenticate` called in setup fixture — this is correct
 
 ---
 
@@ -275,7 +315,7 @@ client.force_authenticate(user=user)    # CORRECT for DRF JWT
 4. Hardcoded URL in test body (should be in constants)
 5. Missing factory for a model that is used 5+ times
 6. Test naming violations (too vague)
-7. `setUpTestData()` vs autouse fixture (performance)
+7. `setUpTestData` used in a pure pytest class without `TestCase` inheritance (silently ignored — data never created)
 8. Inline magic values not in constants
 
 ---
