@@ -345,28 +345,27 @@ class SmartReviewer:
         """
         event = review_result.get("event", "COMMENT")
 
-        if event == "SKIP":
-            logger.info(f"  ⏸ Skipping post for PR #{pr_number} (unresolved threads remain)")
-        else:
-            logger.info(f"📤 Posting review to PR #{pr_number}")
-            try:
+        try:
+            if event == "SKIP":
+                logger.info(f"  ⏸ Skipping post for PR #{pr_number} (unresolved threads remain)")
+            else:
+                logger.info(f"📤 Posting review to PR #{pr_number}")
                 self.github.post_review(pr_number, review_result)
                 logger.info(f"  ✓ Review posted successfully")
-            except Exception as e:
-                logger.error(f"  ❌ Failed to post review: {e}")
-                raise
-
-        # Always record to DB so list-prs shows accurate status
-        if head_sha:
-            self.db.record(
-                project=self.config.name,
-                pr_number=pr_number,
-                head_sha=head_sha,
-                event=event,
-                files_reviewed=review_result.get("_files_reviewed", 0),
-                comments_posted=len(review_result.get("comments", [])),
-                title=review_result.get("_title", ""),
-            )
+        except Exception as e:
+            logger.error(f"  ❌ Failed to post review: {e}")
+        finally:
+            # Always record to DB — guaranteed even if post raises
+            if head_sha:
+                self.db.record(
+                    project=self.config.name,
+                    pr_number=pr_number,
+                    head_sha=head_sha,
+                    event=event,
+                    files_reviewed=review_result.get("_files_reviewed", 0),
+                    comments_posted=len(review_result.get("comments", [])),
+                    title=review_result.get("_title", ""),
+                )
     
     def review_and_post(self, pr_number: int, repo_path: Optional[str] = None) -> Dict:
         """Review and post in one step.

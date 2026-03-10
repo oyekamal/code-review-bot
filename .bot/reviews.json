@@ -179,6 +179,15 @@
       "event": "COMMENT",
       "files_reviewed": 0,
       "comments_posted": 0
+    },
+    "4700": {
+      "pr_number": 4700,
+      "title": "[CLP]: Refactor - Isolate the LP Assistant Service",
+      "head_sha": "95d9c9729f085f95e758b55b4fb6ee0e8ba5eba9",
+      "reviewed_at": "2026-03-10T10:34:54.330832",
+      "event": "REQUEST_CHANGES",
+      "files_reviewed": 1,
+      "comments_posted": 3
     }
   }
 }
