@@ -130,6 +130,10 @@ class SmartReviewer:
     def _deduplicate_comments(self, pr_number: int, new_comments: List[Dict]) -> List[Dict]:
         """Remove comments the bot already posted on the same file/line area.
 
+        Checks reviews.json first (no API call). Falls back to GitHub API only
+        when no stored history exists (first run on this PR).
+        Also skips comments on lines the user already resolved.
+
         Args:
             pr_number: PR number to check for existing bot comments
             new_comments: Proposed new comments from the LLM
@@ -137,36 +141,77 @@ class SmartReviewer:
         Returns:
             Filtered list with duplicates removed
         """
-        existing = self.github.get_bot_review_comments(pr_number)
-        # Build set of (path, line) the bot already commented on
-        bot_spots = {
-            (c["path"], c["line"])
-            for c in existing
-            if c["user"] == self.bot_login
-        }
+        stored = self.db.get_comments(self.config.name, pr_number)
 
-        if not bot_spots:
-            return new_comments
-
-        filtered = []
-        for comment in new_comments:
-            path = comment.get("path", "")
-            line = comment.get("line", 0)
-            # Skip if bot already has a comment within 20 lines on the same file
-            # (20-line tolerance handles line number shifts from new commits)
-            already_commented = any(
-                ep == path and abs(el - line) <= 20
-                for ep, el in bot_spots
-            )
-            if already_commented:
-                logger.info(f"  ⏭ Skipping duplicate comment on {path}:{line}")
-            else:
-                filtered.append(comment)
+        if stored:
+            # Fast path: use local DB — no GitHub API call needed
+            filtered = []
+            for comment in new_comments:
+                path = comment.get("path", "")
+                line = comment.get("line", 0)
+                already = any(
+                    s["path"] == path and abs(s["line"] - line) <= 20
+                    for s in stored
+                )
+                if already:
+                    logger.info(f"  ⏭ Skipping duplicate (DB): {path}:{line}")
+                else:
+                    filtered.append(comment)
+        else:
+            # Slow path: no local history — query GitHub API on first run
+            existing = self.github.get_bot_review_comments(pr_number)
+            bot_spots = {
+                (c["path"], c["line"])
+                for c in existing
+                if c["user"] == self.bot_login
+            }
+            if not bot_spots:
+                return new_comments
+            filtered = []
+            for comment in new_comments:
+                path = comment.get("path", "")
+                line = comment.get("line", 0)
+                already = any(ep == path and abs(el - line) <= 20 for ep, el in bot_spots)
+                if already:
+                    logger.info(f"  ⏭ Skipping duplicate (GitHub): {path}:{line}")
+                else:
+                    filtered.append(comment)
 
         skipped = len(new_comments) - len(filtered)
         if skipped:
             logger.info(f"  🔄 Deduplicated {skipped} already-posted comment(s)")
         return filtered
+
+    def _sync_comment_statuses(self, pr_number: int) -> None:
+        """Sync comment resolution status from GitHub into reviews.json.
+
+        Fetches thread details via GraphQL and marks stored comments as resolved
+        when the corresponding GitHub thread is resolved.
+        """
+        threads = self.github.get_review_thread_details(pr_number, self.bot_login)
+        if not threads:
+            return
+        resolved = self.db.sync_resolved_comments(self.config.name, pr_number, threads)
+        if resolved:
+            logger.info(f"  ✅ Marked {resolved} comment(s) as resolved in DB")
+
+    def _record_user_replies(self, pr_number: int) -> None:
+        """Fetch user replies on bot's comments and store them in reviews.json.
+
+        This builds a history of what users said in response to bot feedback,
+        which helps identify which comment patterns are effective.
+        """
+        all_comments = self.github.get_review_comment_replies(pr_number)
+        # Only keep non-bot comments (the replies from developers)
+        user_replies = [
+            c for c in all_comments
+            if c["user_login"] != self.bot_login
+        ]
+        if not user_replies:
+            return
+        updated = self.db.record_user_replies(self.config.name, pr_number, user_replies)
+        if updated:
+            logger.info(f"  💬 Stored {updated} user reply(ies) in DB")
 
     def _bot_has_pending_request_changes(self, pr_number: int) -> bool:
         """Return True if the bot's most recent review is REQUEST_CHANGES."""
@@ -344,18 +389,28 @@ class SmartReviewer:
             head_sha: HEAD commit SHA (used to track what was reviewed)
         """
         event = review_result.get("event", "COMMENT")
+        posted_comments = []
 
         try:
             if event == "SKIP":
                 logger.info(f"  ⏸ Skipping post for PR #{pr_number} (unresolved threads remain)")
             else:
                 logger.info(f"📤 Posting review to PR #{pr_number}")
-                self.github.post_review(pr_number, review_result)
+                posted_comments = self.github.post_review(pr_number, review_result) or []
                 logger.info(f"  ✓ Review posted successfully")
+
+                # Store each posted comment individually for future dedup + learning
+                if posted_comments:
+                    self.db.record_comments(self.config.name, pr_number, posted_comments)
+
+            # Sync resolution status and user replies regardless of whether we posted
+            self._sync_comment_statuses(pr_number)
+            self._record_user_replies(pr_number)
+
         except Exception as e:
             logger.error(f"  ❌ Failed to post review: {e}")
         finally:
-            # Always record to DB — guaranteed even if post raises
+            # Always record summary to DB — guaranteed even if post raises
             if head_sha:
                 self.db.record(
                     project=self.config.name,
@@ -363,7 +418,7 @@ class SmartReviewer:
                     head_sha=head_sha,
                     event=event,
                     files_reviewed=review_result.get("_files_reviewed", 0),
-                    comments_posted=len(review_result.get("comments", [])),
+                    comments_posted=len(posted_comments),
                     title=review_result.get("_title", ""),
                 )
     

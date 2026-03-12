@@ -7,7 +7,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4689": {
       "pr_number": 4689,
@@ -16,7 +17,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4687": {
       "pr_number": 4687,
@@ -25,7 +27,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4683": {
       "pr_number": 4683,
@@ -34,7 +37,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4681": {
       "pr_number": 4681,
@@ -43,7 +47,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4680": {
       "pr_number": 4680,
@@ -52,7 +57,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4679": {
       "pr_number": 4679,
@@ -61,7 +67,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4678": {
       "pr_number": 4678,
@@ -70,7 +77,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4677": {
       "pr_number": 4677,
@@ -79,7 +87,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4676": {
       "pr_number": 4676,
@@ -88,7 +97,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4675": {
       "pr_number": 4675,
@@ -97,7 +107,8 @@
       "reviewed_at": "2026-03-09T14:24:31.911707",
       "event": "APPROVE",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4670": {
       "pr_number": 4670,
@@ -106,7 +117,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4666": {
       "pr_number": 4666,
@@ -115,16 +127,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
-    },
-    "4638": {
-      "pr_number": 4638,
-      "title": "Add notification mechanism for notification for training reminder for stale users",
-      "head_sha": "3dfdbabb45ce36058ec83d74c30f060ae9f4b44c",
-      "reviewed_at": "2026-03-07T12:00:00",
-      "event": "COMMENT",
-      "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4613": {
       "pr_number": 4613,
@@ -133,7 +137,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4530": {
       "pr_number": 4530,
@@ -142,7 +147,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4497": {
       "pr_number": 4497,
@@ -151,7 +157,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4457": {
       "pr_number": 4457,
@@ -160,7 +167,8 @@
       "reviewed_at": "2026-03-07T12:00:00",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4692": {
       "pr_number": 4692,
@@ -169,7 +177,8 @@
       "reviewed_at": "2026-03-09T10:58:05.024441",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4693": {
       "pr_number": 4693,
@@ -178,7 +187,8 @@
       "reviewed_at": "2026-03-09T14:30:49.062638",
       "event": "COMMENT",
       "files_reviewed": 0,
-      "comments_posted": 0
+      "comments_posted": 0,
+      "comments": []
     },
     "4700": {
       "pr_number": 4700,
@@ -187,7 +197,8 @@
       "reviewed_at": "2026-03-10T10:34:54.330832",
       "event": "REQUEST_CHANGES",
       "files_reviewed": 1,
-      "comments_posted": 3
+      "comments_posted": 3,
+      "comments": []
     }
   }
 }

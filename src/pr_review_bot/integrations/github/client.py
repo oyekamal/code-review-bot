@@ -160,12 +160,15 @@ class GitHubClient:
             logger.error(f"  ❌ Error fetching files: {e}")
             raise
     
-    def post_review(self, pr_number: int, review_data: Dict) -> None:
+    def post_review(self, pr_number: int, review_data: Dict) -> List[Dict]:
         """Post a review to a pull request.
-        
+
         Args:
             pr_number: PR number
             review_data: Review dictionary with 'event', 'summary', 'comments'
+
+        Returns:
+            List of comment dicts that were actually posted (path, line, body).
         """
         logger.info(f"💬 Posting review to PR #{pr_number}")
         
@@ -257,9 +260,13 @@ class GitHubClient:
             else:
                 # COMMENT event with no line comments — nothing useful to post
                 logger.info(f"  ℹ No line comments and no decision — skipping post")
-            
+
             logger.info(f"  ✓ Review posted successfully")
-            
+            return [
+                {"path": c["path"], "line": c["line"], "body": c["body"]}
+                for c in review_comments
+            ]
+
         except GithubException as e:
             logger.error(f"  ❌ Error posting review: {e}")
             raise
@@ -336,46 +343,13 @@ class GitHubClient:
     def get_unresolved_bot_threads(self, pr_number: int, bot_login: str) -> int:
         """Return count of unresolved review threads started by the bot.
 
-        Uses GitHub GraphQL API since REST API doesn't expose resolved status.
-        Returns 0 if all bot threads are resolved (or if there are none).
+        Returns 0 if all resolved (or no threads), -1 if the query failed.
+        Delegates to get_review_thread_details() to avoid duplicate GraphQL calls.
         """
-        owner, repo = self.repo_fullname.split("/")
-        query = """
-        query($owner: String!, $repo: String!, $pr: Int!) {
-          repository(owner: $owner, name: $repo) {
-            pullRequest(number: $pr) {
-              reviewThreads(first: 100) {
-                nodes {
-                  isResolved
-                  comments(first: 1) {
-                    nodes { author { login } }
-                  }
-                }
-              }
-            }
-          }
-        }
-        """
-        try:
-            resp = requests.post(
-                "https://api.github.com/graphql",
-                headers={"Authorization": f"bearer {self.token}"},
-                json={"query": query, "variables": {"owner": owner, "repo": repo, "pr": pr_number}},
-                timeout=30,
-            )
-            resp.raise_for_status()
-            threads = resp.json()["data"]["repository"]["pullRequest"]["reviewThreads"]["nodes"]
-            unresolved = sum(
-                1 for t in threads
-                if not t["isResolved"]
-                and t["comments"]["nodes"]
-                and t["comments"]["nodes"][0]["author"]["login"] == bot_login
-            )
-            logger.info(f"  🔍 Bot threads on PR #{pr_number}: {len(threads)} total, {unresolved} unresolved")
-            return unresolved
-        except Exception as e:
-            logger.warning(f"  ⚠ Could not fetch review threads: {e}")
-            return -1  # -1 = unknown, fall through to normal review
+        threads = self.get_review_thread_details(pr_number, bot_login)
+        if threads is None:
+            return -1  # Query failed — fall through to normal review
+        return sum(1 for t in threads if not t["is_resolved"])
 
     def get_bot_review_comments(self, pr_number: int) -> List[Dict]:
         """Get all existing inline review comments on a PR.
@@ -396,6 +370,95 @@ class GitHubClient:
             ]
         except GithubException as e:
             logger.warning(f"  ⚠ Could not fetch review comments: {e}")
+            return []
+
+    def get_review_thread_details(self, pr_number: int, bot_login: str) -> List[Dict]:
+        """Return per-thread resolution details for threads started by the bot.
+
+        Extends the basic unresolved-count query to include path and line so we
+        can match threads back to stored comment records.
+
+        Returns list of {path, line, is_resolved} for bot-authored threads.
+        """
+        owner, repo = self.repo_fullname.split("/")
+        query = """
+        query($owner: String!, $repo: String!, $pr: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $pr) {
+              reviewThreads(first: 100) {
+                nodes {
+                  isResolved
+                  comments(first: 1) {
+                    nodes {
+                      author { login }
+                      path
+                      line
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+        try:
+            resp = requests.post(
+                "https://api.github.com/graphql",
+                headers={"Authorization": f"bearer {self.token}"},
+                json={"query": query, "variables": {"owner": owner, "repo": repo, "pr": pr_number}},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            threads = resp.json()["data"]["repository"]["pullRequest"]["reviewThreads"]["nodes"]
+            result = []
+            for t in threads:
+                nodes = t["comments"]["nodes"]
+                if not nodes:
+                    continue
+                first = nodes[0]
+                if first["author"]["login"] != bot_login:
+                    continue
+                result.append({
+                    "is_resolved": t["isResolved"],
+                    "path": first.get("path", ""),
+                    "line": first.get("line") or 0,
+                })
+            unresolved = sum(1 for r in result if not r["is_resolved"])
+            logger.info(
+                f"  🔍 Bot threads on PR #{pr_number}: {len(result)} total, {unresolved} unresolved"
+            )
+            return result
+        except Exception as e:
+            logger.warning(f"  ⚠ Could not fetch review thread details: {e}")
+            return None  # None = query failed (distinguishes from [] = no threads)
+
+    def get_review_comment_replies(self, pr_number: int) -> List[Dict]:
+        """Fetch all review comments on the PR (bot + user replies).
+
+        Returns list of {comment_id, in_reply_to_id, user_login, path, line, body, created_at}.
+        """
+        try:
+            url = f"https://api.github.com/repos/{self.repo_fullname}/pulls/{pr_number}/comments"
+            headers = {
+                "Authorization": f"token {self.token}",
+                "Accept": "application/vnd.github.v3+json",
+            }
+            resp = requests.get(url, headers=headers, params={"per_page": 100}, timeout=30)
+            resp.raise_for_status()
+            return [
+                {
+                    "comment_id": c["id"],
+                    "in_reply_to_id": c.get("in_reply_to_id"),
+                    "user_login": c["user"]["login"],
+                    "path": c.get("path", ""),
+                    "line": c.get("line") or c.get("position") or 0,
+                    "body": c.get("body", ""),
+                    "created_at": c.get("created_at", ""),
+                }
+                for c in resp.json()
+            ]
+        except Exception as e:
+            logger.warning(f"  ⚠ Could not fetch review comment replies: {e}")
             return []
 
     def get_existing_reviews(self, pr_number: int) -> List[Dict]:
